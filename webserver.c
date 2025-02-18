@@ -58,11 +58,12 @@ unsigned __stdcall handle_client(void* socket) {
     recv(new_socket, buffer, BUFFER_SIZE, 0);
     printf("Received request:\n%s\n", buffer);
 
-    // Parse the request to get the file path
-    char* path = strtok(buffer, " ");
-    path = strtok(NULL, " ");
+    // Parse the request line to get the HTTP method and file path
+    char method[16], path[256];
+    sscanf(buffer, "%s %s", method, path);
 
-    if (!path) {
+    // Check if the method is supported
+    if (strcmp(method, "GET") != 0) { // Only allow GET method
         const char* bad_request_response = "HTTP/1.1 400 Bad Request\nContent-Type: text/plain\nContent-Length: 15\n\n400 Bad Request";
         send(new_socket, bad_request_response, strlen(bad_request_response), 0);
         closesocket(new_socket);
